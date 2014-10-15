@@ -3,15 +3,153 @@
     <title><![CDATA[Blog]]></title>
     <link href="/atom.xml" rel="self"/>
     <link href="/"/>
-    <updated>2014-10-14T07:53:21-04:00</updated>
+    <updated>2014-10-14T22:33:39-04:00</updated>
     <id>/</id>
         <generator uri="http://sculpin.io/">Sculpin</generator>
+            <entry>
+            <title type="html"><![CDATA[Reimplementing bind, call and apply]]></title>
+            <link href="/blog/2014/10/14/reimplementing-bind-call-and-apply"/>
+            <updated>2014-10-14T00:00:00-04:00</updated>
+            <id>/blog/2014/10/14/reimplementing-bind-call-and-apply</id>
+            <content type="html"><![CDATA[<p>Not long ago I wrote a post about
+<a href="/blog/2014/10/12/mimickin-bind-call-and-apply">Mimicking bind, call and apply</a>. The
+feedback I got from some of my friends, although overall positive, was that it
+was just a little too complicated. This was especially evident in the <code>call</code>
+function. I attribute this complexity to the work I had to do to unpack the
+arguments the <code>call</code> and <code>apply</code> functions were invoked with. Let's face it,
+wrapping partial functions with partial functions can twist your understanding
+of what's happening pretty quickly.</p>
+
+<p>Earlier today I was speaking about this problem with a friend of mine and he
+mentioned the ES6 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator"><code>spread</code></a>
+operator. If, like me, you're not familiar with <code>spread</code> it's a new operator that
+is part of the ES6 proposal. Here is <code>spread</code>'s summary from MDN:</p>
+
+<blockquote>
+  <p>The spread operator allows an expression to be expanded in places where multiple
+    arguments (for function calls) or multiple elements (for array literals) are expected.</p>
+</blockquote>
+
+<p>You can use spread in function calls <code>f(...iterableObj);</code> and in array literals
+<code>[...iterableObj, 4, 5, 6]</code>. Spread is going to be really useful in our scripts
+as it's going to simplify our code by removing <em>a lot</em> of the hoops we have to jump
+through to produce concise and expressive code. If you can't tell, I'm pretty stoked
+about <code>spread</code>.</p>
+
+<p>Armed with the <code>spread</code> operator, it's now possible to completely reimplement
+<code>bind</code>, <code>call</code> and <code>apply</code> from first principles.</p>
+
+<h3>bind</h3>
+
+<p>The <code>bind</code> function is the most complicated of the three functions and rightfully
+so in my opinion. It does a lot of work. The approach I took this time was to make
+a copy of the context (if provided) and then make the target function a property
+of the copied context. <code>bind</code> returns a closure, that when executed, merges
+the arguments the function was bound with to the arguments the closure was called
+with and then executes the target function belonging to the copied
+context with those arguments.</p>
+
+<pre><code class="php">function bind(context, fn) {
+    function copy(context) {
+        var keys = Object.keys(context),
+            copy = {};
+        keys.forEach(function (key) {
+            this[key] = context[key];
+        }, copy);
+        return copy;
+    }
+
+    function mergeArgs (boundArgs, callArgs) {
+        var merged = [];
+        merged.push(...boundArgs, ...callArgs);
+        return merged;
+    }
+
+    var boundArgs = [].slice.call(arguments, 2),
+        o = context ? copy(context) : {};
+
+    o.fn = fn;
+    return function () {
+        var callArgs = [].slice.call(arguments, 0)
+        o.fn(...mergeArgs(boundArgs, callArgs));
+    };
+}
+
+
+function greet(greeting, name) {
+    console.log(greeting + " " + name + "!");
+}
+
+var morningGreeter = bind(void 0, greet, 'Good Morning');
+
+morningGreeter('Alice');
+// =&gt; Good Morning Alice!
+
+morningGreeter('Bob');
+// =&gt; Good Morning Bob!
+
+
+function sayHello(smallTalk) {
+  console.log('Hello ' + this.name + ", " + smallTalk);
+}
+
+var me = {
+  name: 'Colin',
+  fn: function () {
+    console.log("Hello World");
+  }
+};
+
+var talkToMe = bind(me, sayHello);
+talkToMe('How about that sports ball?');
+// =&gt; Hello Colin, How about that sports ball?
+
+// binding `me` to `sayHello` didn't clobber `me.fn`
+me.fn();
+// =&gt; Hello World
+</code></pre>
+
+<h3><code>call</code> and <code>apply</code></h3>
+
+<p>Once <code>bind</code> was complete implementing <code>call</code> and <code>apply</code> was really really simple.</p>
+
+<pre><code class="php">function call(context, fn) {
+    var args = [].slice.call(arguments, 2);
+    return bind(context, fn)(...args);
+}
+
+function apply(context, fn, args) {
+    args = args || [];
+    return bind(context, fn)(...args);
+}
+
+call(me, sayHello, "Some weather we're getting!");
+// =&gt; Hello Colin, Some weather we're getting!"
+
+apply(me, sayHello, ["Recent news events have been surprising wouldn't you say?"]);
+// =&gt; "Hello Colin, Recent news events have been surpristing wouldn't you say?"
+</code></pre>
+
+<p>There you have it, using <code>spread</code> I was able to simplify the code enormously
+and completely reimplement three context manipulating functions.</p>
+]]></content>
+        </entry>
             <entry>
             <title type="html"><![CDATA[Mimicking bind, call and apply]]></title>
             <link href="/blog/2014/10/12/mimickin-bind-call-and-apply"/>
             <updated>2014-10-12T00:00:00-04:00</updated>
             <id>/blog/2014/10/12/mimickin-bind-call-and-apply</id>
-            <content type="html"><![CDATA[<p>Recently, I've been working on a presentation about JavaScript's <code>this</code>.
+            <content type="html"><![CDATA[<hr />
+
+<h4>Update</h4>
+
+<p>This developer recently discovered a proposed JavaScript operator and
+you won't believe what happens next! Check it out
+<a href="/blog/2014/10/14/reimplementing-bind-call-and-apply">here</a>!!</p>
+
+<hr />
+
+<p>Recently, I've been working on a presentation about JavaScript's <code>this</code>.
 <code>this</code> is a really interesting topic and the preparation has got me
 thinking <strong>a lot</strong> about context and how it's applied within the execution of
 a JavaScript function.</p>
