@@ -47,131 +47,22 @@
                 <div class="span8">
                         <article>
         <header>
-            <h2><a href="/blog/2014/10/14/reimplementing-bind-call-and-apply">Reimplementing bind, call and apply</a></h2>
+            <h2>
+                <a href="/blog/2014/10/14/reimplementing-bind-call-and-apply">Reimplementing bind, call and apply</a><br>
+            </h2>
+            <small class="text-muted">October 14, 2014</small>
         </header>
         <div>
             <p>Not long ago I wrote a post about
-<a href="/blog/2014/10/12/mimickin-bind-call-and-apply">Mimicking bind, call and apply</a>. The
-feedback I got from some of my friends, although overall positive, was that it
-was just a little too complicated. This was especially evident in the <code>call</code>
+<a href="/blog/2014/10/12/mimickin-bind-call-and-apply">Mimicking bind, call and apply</a>.
+The feedback I got from some of my friends, although overall positive, was that it
+was just a little too complicated. This was especially evident in the `call`
 function. I attribute this complexity to the work I had to do to unpack the
-arguments the <code>call</code> and <code>apply</code> functions were invoked with. Let's face it,
+arguments the `call` and `apply` functions were invoked with. Let's face it,
 wrapping partial functions with partial functions can twist your understanding
-of what's happening pretty quickly.</p>
-
-<p>Earlier today I was speaking about this problem with a friend of mine and he
-mentioned the ES6 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_operator"><code>spread</code></a>
-operator. If, like me, you're not familiar with <code>spread</code> it's a new operator that
-is part of the ES6 proposal. Here is <code>spread</code>'s summary from MDN:</p>
-
-<blockquote>
-  <p>The spread operator allows an expression to be expanded in places where multiple
-    arguments (for function calls) or multiple elements (for array literals) are expected.</p>
-</blockquote>
-
-<p>You can use spread in function calls <code>f(...iterableObj);</code> and in array literals
-<code>[...iterableObj, 4, 5, 6]</code>. Spread is going to be really useful in our scripts
-as it's going to simplify our code by removing <em>a lot</em> of the hoops we have to jump
-through to produce concise and expressive code. If you can't tell, I'm pretty stoked
-about <code>spread</code>.</p>
-
-<p>Armed with the <code>spread</code> operator, it's now possible to completely reimplement
-<code>bind</code>, <code>call</code> and <code>apply</code> from first principles.</p>
-
-<h3>bind</h3>
-
-<p>The <code>bind</code> function is the most complicated of the three functions and rightfully
-so in my opinion. It does a lot of work. The approach I took this time was to make
-a copy of the context (if provided) and then make the target function a property
-of the copied context. <code>bind</code> returns a closure, that when executed, merges
-the arguments the function was bound with to the arguments the closure was called
-with and then executes the target function belonging to the copied
-context with those arguments.</p>
-
-<pre><code class="php">function bind(context, fn) {
-    function copy(context) {
-        var keys = Object.keys(context),
-            copy = {};
-        keys.forEach(function (key) {
-            this[key] = context[key];
-        }, copy);
-        return copy;
-    }
-
-    function mergeArgs (boundArgs, callArgs) {
-        var merged = [];
-        merged.push(...boundArgs, ...callArgs);
-        return merged;
-    }
-
-    var boundArgs = [].slice.call(arguments, 2),
-        o = context ? copy(context) : {};
-
-    o.fn = fn;
-    return function () {
-        var callArgs = [].slice.call(arguments, 0)
-        o.fn(...mergeArgs(boundArgs, callArgs));
-    };
-}
-
-
-function greet(greeting, name) {
-    console.log(greeting + " " + name + "!");
-}
-
-var morningGreeter = bind(void 0, greet, 'Good Morning');
-
-morningGreeter('Alice');
-// =&gt; Good Morning Alice!
-
-morningGreeter('Bob');
-// =&gt; Good Morning Bob!
-
-
-function sayHello(smallTalk) {
-  console.log('Hello ' + this.name + ", " + smallTalk);
-}
-
-var me = {
-  name: 'Colin',
-  fn: function () {
-    console.log("Hello World");
-  }
-};
-
-var talkToMe = bind(me, sayHello);
-talkToMe('How about that sports ball?');
-// =&gt; Hello Colin, How about that sports ball?
-
-// binding `me` to `sayHello` didn't clobber `me.fn`
-me.fn();
-// =&gt; Hello World
-</code></pre>
-
-<h3><code>call</code> and <code>apply</code></h3>
-
-<p>Once <code>bind</code> was complete implementing <code>call</code> and <code>apply</code> was really really simple.</p>
-
-<pre><code class="php">function call(context, fn) {
-    var args = [].slice.call(arguments, 2);
-    return bind(context, fn)(...args);
-}
-
-function apply(context, fn, args) {
-    args = args || [];
-    return bind(context, fn)(...args);
-}
-
-call(me, sayHello, "Some weather we're getting!");
-// =&gt; Hello Colin, Some weather we're getting!"
-
-apply(me, sayHello, ["Recent news events have been surprising wouldn't you say?"]);
-// =&gt; "Hello Colin, Recent news events have been surpristing wouldn't you say?"
-</code></pre>
-
-<p>There you have it, using <code>spread</code> I was able to simplify the code enormously
-and completely reimplement three context manipulating functions.</p>
-
+of what's happening pretty quickly.
+</p>
+            <span class="pull-right"><a href="/blog/2014/10/14/reimplementing-bind-call-and-apply">continue</a></span>
         </div>
                     <p class="tags">
             Tags:
@@ -179,232 +70,18 @@ and completely reimplement three context manipulating functions.</p>
             </article>
     <article>
         <header>
-            <h2><a href="/blog/2014/10/12/mimickin-bind-call-and-apply">Mimicking bind, call and apply</a></h2>
+            <h2>
+                <a href="/blog/2014/10/12/mimickin-bind-call-and-apply">Mimicking bind, call and apply</a><br>
+            </h2>
+            <small class="text-muted">October 12, 2014</small>
         </header>
         <div>
-            <hr />
-
-<h4>Update</h4>
-
-<p>This developer recently discovered a proposed JavaScript operator and
-you won't believe what happens next! Check it out
-<a href="/blog/2014/10/14/reimplementing-bind-call-and-apply">here</a>!!</p>
-
-<hr />
-
-<p>Recently, I've been working on a presentation about JavaScript's <code>this</code>.
-<code>this</code> is a really interesting topic and the preparation has got me
-thinking <strong>a lot</strong> about context and how it's applied within the execution of
-a JavaScript function.</p>
-
-<p>I wanted to see if I could mimic the <code>bind</code>, <code>call</code> and <code>apply</code> methods
-of <code>Function.prototype</code> from first principles. I wasn't sure if this was even
-going to be possible as <code>this</code> in a functions execution context is really well
-protected. In the end, <code>bind</code> turned out to be my work horse, whether using
-<code>bind</code> in the implementation of these functions is considered cheating is <em>for
-you to decide.</em></p>
-
-<h3>bind</h3>
-
-<p><code>bind</code> was the simplest method to mimic. When you call <code>bind</code>, all it really does is return
-a function that remembers the context you passed it. This is so that when you invoke the
-function, it executes within the remembered context. Doing this is really easy to
-accomplish using closures.</p>
-
-<pre><code class="javaScript">function bind(context, fn) {
-    return function () {
-        var args = [].slice.call(arguments, 0);
-        return fn.apply(context, args);
-    };
-}
-
-function aWhatSaysWhat() {
-    console.log("A " + this.what + " says " + this.sound + ".");
-}
-
-var fox = {
-    what: 'fox',
-    sound: 'ring-ding-ding-ding-dingeringeding'
-},
-    whatDoesTheFoxSay = bind(fox, aWhatSaysWhat);
-
-whatDoesTheFoxSay();
-// =&gt; A fox says ring-ding-ding-ding-dingeringeding.
-</code></pre>
-
-<h3>call</h3>
-
-<p><code>call</code> was certainly more difficult to wrap my head around. The biggest difficulty
-I faced was unpacking the arguments passed to the called function. I ended up 
-having to scrap work on one implementation because, in the end, it was too "cheaty".
-I think though that the process I went through is interesting and important to
-understanding the final "not so cheaty" solution.</p>
-
-<p>I started by creating a function called <code>partialFirst</code>. It accepted a function and
-any other single value as its arguments. The return value of <code>partialFirst</code> is a
-closure which, when invoked, prepends the <code>first</code> value to the list of arguments
-the closure was invoked with and then returns the result of the closed over
-function invoked using those arguments.</p>
-
-<pre><code class="javaScript">function partialFirst(fn, first) {
-    return function () {
-        var args = [].slice.call(arguments, 0);
-        args.unshift(first);
-        return fn.apply(this, args);
-    };
-}
-</code></pre>
-
-<p>My idea was to use this function to create a nesting of partial functions where each
-partial would be passed one of the arguments used in the invocation of my 
-<code>call</code>. Essentially, this would wind partial functions around the target function.
-When the outer most partial is executed it would trigger an unwinding of partials
-where each partial would add its own closed over <code>first</code> argument to an 
-array of final arguments. This array of arguments would then be applied to the target
-function and the result of the invocation would be returned. It worked surprisingly
-well.</p>
-
-<pre><code class="javaScript">function call(context, fn) {
-    var i, l = fn.length,
-        args = [].slice.call(arguments, 2);
-
-    return (function () {
-        for (i = 0; i &lt; l; i++) {
-            fn = partialFirst(fn, args[i]);
-        }
-        return fn.bind(context)();
-    })();
-};
-
-weSay = {
-    you: 'goodbye',
-    me: 'hello'
-};
-
-function helloGoodbye(youSay, iSay) {
-    console.log("You say " + youSay + ", I say " + iSay);
-}
-
-function objHelloGoodbye() {
-    console.log("You say " + this.you + " and I say " + this.me);
-}
-
-call(void 0, helloGoodbye, 'yes', 'no');
-// =&gt; 'You say yes, I say no'
-call(weSay, objHelloGoodbye);
-// =&gt; 'You say goodbye and I say hello'
-</code></pre>
-
-<p>I was pretty happy with myself when I sorted this out and honestly a little
-worried that it appeared to be working. I came back to it a couple time to make
-sure I actually did know how it was working and why. To tidy things up, I
-decided to make <code>partialFirst</code> an inner function inside my <code>call</code> function. That's
-when I discovered that I took a complicated approach in an attempt to hide
-the cheating that what going on.</p>
-
-<p>I was using <code>apply</code> to implement <code>call</code> and if I was going to do that, a much
-less complicated solution would be:</p>
-
-<pre><code class="javaScript">function call(context, fn) {
-    var args = [].slice.call(arguments, 2);
-    return fn.apply(context, args);
-}
-</code></pre>
-
-<p>and while that's simple and small, it's still cheating. I needed to find an
-alternate solution.</p>
-
-<p>While I was looking for this elusive alternate solution I circled back to <code>bind</code>
-and discovered that my original implementation was incomplete. It turns out that
-<code>bind</code> also accepts a varying amount of arguments which it prepends to any 
-arguments the bound function is called with. This is what I needed, <code>partialFirst</code>
-was basically a hobbled version of <code>bind</code>. I updated my <code>call</code> to use <code>bind</code> and
-removed <code>partialFirst</code>.</p>
-
-<pre><code class="javaScript">function call(context, fn) {
-  var i, l = fn.length,
-      args = [].slice.call(arguments, 2),
-      fn = fn.bind(context);
-
-  return (function () {
-    for (i = 0; i &lt; l; i++) {
-      fn = fn.bind(context, args[i]);
-    }
-    return fn();
-  })();
-};
-</code></pre>
-
-<p>Much better.</p>
-
-<h3>apply</h3>
-
-<p>Since the difference between <code>call</code> and <code>apply</code> is how the arguments are passed to the 
-target function, once I had <code>call</code> sorted out, mimicking <code>apply</code> was super simple.</p>
-
-<pre><code class="javaScript">function apply(context, fn, args) {
-  var i, l,
-      fn = fn.bind(context);
-
-  return (function () {
-    if (args) {
-        for (i = 0, l = args.length; i &lt; l; i++) {
-          fn = fn.bind(context, args[i]);
-        }
-    }
-    return fn();
-  })();
-};
-</code></pre>
-
-<p>The only place I got tripped up was if the target function wasn't given any arguments,
-this is why I'm verifying that <code>args</code> is defined before winding the target function up
-with partials.</p>
-
-<h3>A better bind</h3>
-
-<p>I noted earlier that my original mimic of <code>bind</code> was incomplete, let's resolve
-that now.</p>
-
-<pre><code class="javaScript">function bind(context, fn) {
-    function mergeArgs (boundArgs, callArgs) {
-        function push (elem) {
-            this.push(elem);
-        }
-        var merged = [];
-        boundArgs.forEach(push, merged);
-        callArgs.forEach(push, merged);
-        return merged;
-    }
-
-    var boundArgs = [].slice.call(arguments, 2);
-    return function () {
-        var callArgs = [].slice.call(arguments, 0)
-        return fn.apply(context, mergeArgs(boundArgs, callArgs));
-    };
-}
-
-function greet(greeting, name) {
-    console.log(greeting + " " + name + "!");
-}
-
-var morningGreeter = bind(void 0, greet, 'Good Morning');
-
-morningGreeter('Alice');
-// =&gt; Good Morning Alice!
-
-morningGreeter('Bob');
-// =&gt; Good Morning Bob!
-</code></pre>
-
-<p>The better <code>bind</code> was a little more involved but not by much. I think I may have
-gotten a little clever in the <code>mergeArgs</code> function but I'll leave that for you
-to decide.</p>
-
-<p>All in all, this was a really fun exercise and I feel like I came out of it with
-a better understanding of how context can be manipulated in JavaScript. A total
-win win for me.</p>
-
+            <p>Recently, I've been working on a presentation about JavaScript's `this`.
+`this` is a really interesting topic and the preparation has got me
+thinking a lot about context and how it's applied within the execution of
+a JavaScript function.
+</p>
+            <span class="pull-right"><a href="/blog/2014/10/12/mimickin-bind-call-and-apply">continue</a></span>
         </div>
                     <p class="tags">
             Tags:
